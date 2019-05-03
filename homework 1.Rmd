@@ -1,0 +1,108 @@
+---
+title: "Homework 1"
+author: "danfeis"
+date: "2019/4/30"
+output: html_document
+---
+
+```{r include=FALSE}
+setwd("E:/KU bioinformatics/block 4/high throughout/week1/data")
+```
+
+## Question 1
+```{r message=FALSE}
+library("babynames")
+library("tidyverse")
+```
+
+### 1a
+```{r}
+P.name<-head(babynames %>% select(sex,name,n,prop) %>% filter(str_detect(name,"^P") & sex=="F")%>%group_by(name)%>%summarise(name_sum=sum(n))%>%arrange(desc(name_sum)),5)
+P.name
+```
+
+### 1b
+```{r}
+p.nameyear<-babynames%>%filter(name=="Patricia"|name=="Pamela"|name=="Phyllis"|name=="Peggy"|name=="Paula")%>%filter(sex=="F")%>%arrange(desc(n))
+p.nameyear
+ggplot(data=p.nameyear,mapping=aes(x=year,y=n))+geom_line()+facet_wrap(~name)
+ggplot(data=p.nameyear,mapping=aes(x=year,y=prop))+geom_line()+facet_wrap(~name)
+```
+
+## Question 2
+In the same dataset, is the name Arwen significantly more (or less) common in 2004 vs 1990? Is the change significant? What is the likely cause? 
+```{r}
+Arwen<-babynames%>%filter(year==2004 | year==1990)%>%filter(name=="Arwen")%>%select(year,name,n)
+nonArwen<-babynames%>%filter(year==2004 | year==1990)%>%filter(name!="Arwen")%>%group_by(year)%>%summarise(n=sum(n))%>%mutate(name="nonArwen")
+Arwen_bind<-bind_rows(Arwen,nonArwen)%>%spread(year,n)
+Arwen_bind
+fisher.test(as.matrix(Arwen_bind[2:3]))
+```
+
+It is due to release of a movie: the lord of rings
+
+## Question 3
+```{r}
+flowers<-read_tsv("E:/KU bioinformatics/block 4/high throughout/week1/data/flowers.txt")
+Sepal<-flowers%>%select(Sepal.Length,Sepal.Width,Species)%>%mutate(type="Sepal")%>%rename(length=Sepal.Length,width=Sepal.Width)
+Sepal
+Petal<-flowers%>%select(Petal.Length,Petal.Width,Species)%>%mutate(type="Petal")%>%rename(length=Petal.Length,width=Petal.Width)
+Petal
+bind<-bind_rows(Petal,Sepal)
+bind
+```
+
+```{r}
+ggplot(data=bind,mapping=aes(x=length,y=width,color=Species))+geom_point()+geom_smooth(method = "lm",fullrange=TRUE)+facet_wrap(~type,scales = "free")
+```
+
+## Question 4
+```{r}
+chip<-read_tsv("E:/KU bioinformatics/block 4/high throughout/Group work1/hw1_final/chip_mm5.txt")
+chip
+```
+
+### hypothesis 1
+H0: Binding scores are dependent on chromosome
+H1: Binding scores are independent on chromosome
+```{r}
+ggplot(data=chip,mapping=aes(x=score))+geom_density()+facet_wrap(~chr,scales = "free")
+```
+
+```{r}
+chip.mean<-chip%>%group_by(chr)%>%summarise(chr.mean=mean(na.omit(score)))
+chip.mean
+ggplot(data=chip.mean,mapping=aes(x=as.factor(chr),y=chr.mean))+geom_bar(stat = "identity")
+```
+
+```{r}
+ggplot(data=chip,mapping=aes(x=as.factor(chr),y=score,fill=as.factor(chr)))+geom_boxplot()
+```
+
+```{r}
+oneway.test(score~as.factor(chr),data=chip)
+pairwise.t.test(chip$score,g=as.factor(chip$chr))
+```
+
+### hypothesis 2
+H0: Binding site widths (end-start) are dependent on chromosome
+h1: Binding site widths (end-start) are independent on chromosome
+```{r}
+ggplot(data=chip,mapping=aes(x=chr,y=end-start,fill=as.factor(chr)))+geom_boxplot()
+```
+
+```{r}
+width.mean<-chip%>%group_by(chr)%>%summarise(width.mean=mean(na.omit(end-start)))
+width.mean
+ggplot(data=width.mean,mapping=aes(x=as.factor(chr),y=width.mean))+geom_bar(stat = "identity")
+```
+
+```{r}
+ggplot(data=chip,mapping=aes(x=end-start))+geom_density()+facet_wrap(~chr)
+```
+
+```{r}
+kruskal.test(end~as.factor(chr), data=chip)
+pairwise.wilcox.test(chip$score,g=as.factor(chip$chr))
+```
+
