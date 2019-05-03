@@ -55,3 +55,5 @@ chip<-mutate(chip, bswidth=end-start)
 kruskal.test(score ~ as.factor(chr), data=chip)
 
 kruskal.test(bswidth ~ as.factor(chr), data=chip)
+
+## finish
