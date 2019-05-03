@@ -28,6 +28,7 @@ ggplot(data=namebyyears, aes(y=n, x=year, col=name))+
 #Question 2
 arwen1990<- babynames %>% filter(name =="Arwen", year=="1990")
 arwen2004<- babynames %>% filter(name =="Arwen", year=="2004")
+# LORT baby
 
 
 #Question 3
