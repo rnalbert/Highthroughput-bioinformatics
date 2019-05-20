@@ -1,0 +1,55 @@
+---
+title: "Homework 2"
+author: "albert"
+date: "May 20, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Homework 2
+
+# Exercise 2 a
+```{r}
+setwd("/Users/Albert/Desktop/bioinformatics/High Throughput anaylses/hw2_for_students")
+
+library(tidyverse)
+cnames<-c("chr","yesno","start","end","cov")
+
+ERa<-read_tsv("ERa_genomecov.bed", col_names = cnames)
+
+ERb<-read_tsv("ERb_genomecov.bed", col_names = cnames)
+
+#Add values to column "ER" which is to recognise if its b or a
+ERa<-cbind(ERa, ER=rep("a",nrow(ERa)))
+
+ERb<-cbind(ERb, ER=rep("b",nrow(ERb)))
+
+ERall<-rbind(ERa,ERb) #Merge results from a and b
+
+ggplot(data=filter(ERall,yesno==1), aes(x=chr, y=cov*100)) +
+  geom_bar(stat="identity") + facet_grid(rows=vars(ER))
+
+```
+
+In the bar diagram above, chromosomes with no ERa or b coverage have been omitted
+
+# Exercise 2 b
+
+```{r}
+library(tidyverse)
+library(VennDiagram)
+
+a<-read_tsv("ERa_hg18.bed", col_names = FALSE, skip = 1)
+
+b<-read_tsv("ERb_hg18.bed", col_names = FALSE, skip = 1)
+
+grid.newpage()
+
+# the number 345 in cross.area is calculated from linux with following command:
+
+#bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed | uniq | wc -l
+draw.pairwise.venn(area1 = nrow(a), area2 = nrow(b), cross.area = 345, category = c("ERa", 
+    "ERb"))
